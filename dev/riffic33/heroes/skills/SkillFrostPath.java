@@ -34,7 +34,7 @@ public class SkillFrostPath extends ActiveSkill {
 	
     public SkillFrostPath(Heroes plugin) {
         super(plugin, "Frostpath");
-        setDescription("Turn water to ice as you walk.");
+        setDescription("Turn water to ice as you walk for $1 seconds.");
         setUsage("/skill frostpath");
         setArgumentRange(0, 0);
         setIdentifiers("skill frostpath");
@@ -153,7 +153,7 @@ public class SkillFrostPath extends ActiveSkill {
     	}
     }
     
-    //TODO
+    @Override
     public String getDescription(Hero hero) {
     	long duration = (Integer) SkillConfigManager.getSetting(hero.getHeroClass(), this, Setting.DURATION.node(), 60000);
     	boolean cancels = (boolean) SkillConfigManager.getSetting(hero.getHeroClass(), this, "AttackCancels", true);

@@ -78,6 +78,7 @@ public class SkillPassThrough extends ActiveSkill {
         }
     }
     
+    @Override
     public String getDescription(Hero hero) {
         return getDescription();
     }

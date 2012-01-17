@@ -25,7 +25,7 @@ public class SkillRocketJump extends ActiveSkill {
 		
     public SkillRocketJump(Heroes plugin) {
         super(plugin, "Rocketjump");
-        setDescription("Put on a rocket pack and use boosts allowed. Safe fall provided.");
+        setDescription("Put on a rocket pack with $1 boosts. Safe fall provided.");
         setUsage("/skill rocketjump");
         setArgumentRange(0, 0);
         setIdentifiers("skill rocketjump");
@@ -123,7 +123,7 @@ public class SkillRocketJump extends ActiveSkill {
     	
     }
     
-    //TODO
+    @Override
     public String getDescription(Hero hero) {
         int boosts = SkillConfigManager.getUseSetting(hero, this, "rocket-boosts", 1, false);
         return getDescription().replace("$1", boosts + "");

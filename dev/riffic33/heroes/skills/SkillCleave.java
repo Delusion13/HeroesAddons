@@ -103,7 +103,7 @@ public class SkillCleave extends ActiveSkill {
             }
             
         	Entity initTarg = event.getEntity();
-            if (!(event.getEntity() instanceof LivingEntity) && !(event.getEntity() instanceof Player)) {
+            if (!(initTarg instanceof LivingEntity) && !(initTarg instanceof Player)) {
                 return;
             }
 
@@ -133,7 +133,7 @@ public class SkillCleave extends ActiveSkill {
     
     private int damageAround(Player player, Entity exception){
     	Hero hero = plugin.getHeroManager().getHero(player);
-    	int MaxTargets = (int) SkillConfigManager.getSetting(hero.getHeroClass(), this, "MaxTargets", 3);
+    	int MaxTargets = (int) SkillConfigManager.getSetting(hero.getHeroClass(), this, "MaxTargets", 3) - 1;
     	int radius = (int) SkillConfigManager.getSetting(hero.getHeroClass(), this, Setting.RADIUS.node(), 5);
     	int damage = (int) SkillConfigManager.getSetting(hero.getHeroClass(), this, Setting.DAMAGE.node(), 5);
     	
@@ -142,11 +142,11 @@ public class SkillCleave extends ActiveSkill {
     	HeroParty hParty = hero.getParty();
     	if(hParty != null){
 	    	for(Entity entity : nearby){
-	    		if(Hits >= MaxTargets || entity.equals(exception)) break;
-	    		if(entity instanceof Player && hParty.isPartyMember((Player) entity)){
+	    		if(Hits >= MaxTargets) break;
+	    		if((entity instanceof Player && hParty.isPartyMember((Player) entity))){
 	    			continue;
 	    		}
-	    		if((entity instanceof Monster || entity instanceof ComplexLivingEntity || entity instanceof Player) && isInFront(player, entity)){
+	    		if(!(entity.equals(exception)) && (entity instanceof Monster || entity instanceof ComplexLivingEntity || entity instanceof Player) && isInFront(player, entity)){
 	    			damageEntity((LivingEntity) entity, player, damage, DamageCause.ENTITY_ATTACK);
 	    			Hits += 1;
 	    		}
@@ -154,7 +154,7 @@ public class SkillCleave extends ActiveSkill {
     	}else{
     		for(Entity entity : nearby){
     			if(Hits >= MaxTargets || entity.equals(exception)) break;
-    			if((entity instanceof Monster || entity instanceof ComplexLivingEntity || entity instanceof Player) && isInFront(player, entity)){
+    			if(!(entity.equals(exception)) && (entity instanceof Monster || entity instanceof ComplexLivingEntity || entity instanceof Player) && isInFront(player, entity)){
 	    			damageEntity((LivingEntity) entity, player, damage, DamageCause.ENTITY_ATTACK);
 	    			Hits += 1;
 	    		}

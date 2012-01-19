@@ -90,7 +90,10 @@ public class SkillCleave extends ActiveSkill {
     
     public class SkillCleaveEvent extends EntityListener{
     		
+    	private final Skill skill;
+        
         public SkillCleaveEvent(Skill skill) {
+            this.skill = skill;
         }
         
         @Override
@@ -99,7 +102,8 @@ public class SkillCleave extends ActiveSkill {
                 return;
             }
             
-            if (!(event.getEntity() instanceof LivingEntity) && !(event.getEntity() instanceof ComplexLivingEntity) && !(event.getEntity() instanceof Player)) {
+        	Entity initTarg = event.getEntity();
+            if (!(event.getEntity() instanceof LivingEntity) && !(event.getEntity() instanceof Player)) {
                 return;
             }
 
@@ -119,25 +123,26 @@ public class SkillCleave extends ActiveSkill {
                 CleaveBuff cb = (CleaveBuff) hero.getEffect("CleaveBuff");
                 
                 hero.removeEffect(cb);
-                int hitAmount = damageAround(player);
+                event.setDamage((int) (SkillConfigManager.getSetting(hero.getHeroClass(), skill, Setting.DAMAGE.node(), 5)));
+                int hitAmount = damageAround(player, initTarg) + 1;
+                
                 broadcast(player.getLocation(),"$1 hit $2 entities with cleave", player.getDisplayName(), hitAmount);
-                event.setCancelled(true);
             }
         }	
     }
     
-    private int damageAround(Player player){
+    private int damageAround(Player player, Entity exception){
     	Hero hero = plugin.getHeroManager().getHero(player);
     	int MaxTargets = (int) SkillConfigManager.getSetting(hero.getHeroClass(), this, "MaxTargets", 3);
     	int radius = (int) SkillConfigManager.getSetting(hero.getHeroClass(), this, Setting.RADIUS.node(), 5);
     	int damage = (int) SkillConfigManager.getSetting(hero.getHeroClass(), this, Setting.DAMAGE.node(), 5);
     	
-    	int Hits = 0;
+    	int Hits = 0; 
     	List<Entity> nearby = player.getNearbyEntities(radius, radius, radius);
     	HeroParty hParty = hero.getParty();
     	if(hParty != null){
 	    	for(Entity entity : nearby){
-	    		if(Hits >= MaxTargets) break;
+	    		if(Hits >= MaxTargets || entity.equals(exception)) break;
 	    		if(entity instanceof Player && hParty.isPartyMember((Player) entity)){
 	    			continue;
 	    		}
@@ -148,7 +153,7 @@ public class SkillCleave extends ActiveSkill {
 	    	}
     	}else{
     		for(Entity entity : nearby){
-    			if(Hits >= MaxTargets) break;
+    			if(Hits >= MaxTargets || entity.equals(exception)) break;
     			if((entity instanceof Monster || entity instanceof ComplexLivingEntity || entity instanceof Player) && isInFront(player, entity)){
 	    			damageEntity((LivingEntity) entity, player, damage, DamageCause.ENTITY_ATTACK);
 	    			Hits += 1;

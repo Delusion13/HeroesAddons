@@ -34,7 +34,7 @@ public class SkillGroundPound extends ActiveSkill {
     @Override
     public ConfigurationSection getDefaultConfig() {
         ConfigurationSection node = super.getDefaultConfig();
-        node.set("BaseTickDamage", 3);
+        node.set("BaseDamage", 3);
         node.set("LevelMultiplier", 0.5);
         node.set("Targets", 4);
         node.set(Setting.RADIUS.node(), 5);
@@ -45,7 +45,7 @@ public class SkillGroundPound extends ActiveSkill {
     @Override
     public SkillResult use(Hero hero, String[] args) {
     	Player player = hero.getPlayer();
-    	int bDmg 			= (int) SkillConfigManager.getUseSetting(hero, this, "BaseTickDamage", 3, false);
+    	int bDmg 			= (int) SkillConfigManager.getUseSetting(hero, this, "BaseDamage", 3, false);
     	float bMulti 		= (float) SkillConfigManager.getUseSetting(hero, this, "LevelMultiplier", 0.5, false);
     	int targets 		= (int) SkillConfigManager.getUseSetting(hero, this, "Targets", 10, false);
     	int radius 			= (int) SkillConfigManager.getUseSetting(hero, this, Setting.RADIUS, 5, false);
@@ -102,7 +102,7 @@ public class SkillGroundPound extends ActiveSkill {
     
     @Override
     public String getDescription(Hero hero) {
-    	int bDmg 			= (int) SkillConfigManager.getUseSetting(hero, this, "BaseTickDamage", 3, false);
+    	int bDmg 			= (int) SkillConfigManager.getUseSetting(hero, this, "BaseDamage", 3, false);
     	float bMulti 		= (float) SkillConfigManager.getUseSetting(hero, this, "LevelMultiplier", 0.5, false);
     	int targets 		= (int) SkillConfigManager.getUseSetting(hero, this, "Targets", 10, false);
     	int newDmg 		= (int) (bMulti <= 0L ? bDmg : bDmg + bMulti*hero.getLevel());

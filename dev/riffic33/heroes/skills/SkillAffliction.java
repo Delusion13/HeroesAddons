@@ -78,7 +78,6 @@ public class SkillAffliction extends TargettedSkill {
     	
 	    public AfflictionEffect(Skill skill, long period, long duration, int tickDmg, Player applier, int maxJumps){
 				super(skill, "Affliction", period, duration, tickDmg, applier);
-				applier.sendMessage("tickDmg: " + tickDmg);
 				this.types.add(EffectType.DISPELLABLE);
 				this.types.add(EffectType.DARK);
 				this.types.add(EffectType.HARMFUL);

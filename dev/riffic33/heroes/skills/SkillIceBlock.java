@@ -15,6 +15,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockListener;
 import com.herocraftonline.dev.heroes.Heroes;
 import com.herocraftonline.dev.heroes.api.SkillResult;
+import com.herocraftonline.dev.heroes.effects.EffectType;
 import com.herocraftonline.dev.heroes.effects.PeriodicExpirableEffect;
 import com.herocraftonline.dev.heroes.hero.Hero;
 import com.herocraftonline.dev.heroes.skill.Skill;
@@ -35,7 +36,7 @@ public class SkillIceBlock extends TargettedSkill {
         setIdentifiers("skill iceblock");
         setTypes(SkillType.SILENCABLE, SkillType.ICE, SkillType.DEBUFF);  
         
-        registerEvent(Type.BLOCK_BREAK, new IceBreakerListener(), Priority.Highest);
+        registerEvent(Type.BLOCK_BREAK, new IceBreakerListener(), Priority.Normal);
     }
    
     @Override
@@ -48,7 +49,7 @@ public class SkillIceBlock extends TargettedSkill {
     @Override
     public SkillResult use(Hero hero, LivingEntity target, String[] args) {
     	Player player = hero.getPlayer();
-   
+    	
     	if (player.equals(target) || hero.getSummons().contains(target) || !damageCheck(player, target)) {
             Messaging.send(player, "Can't freeze the target");
             return SkillResult.INVALID_TARGET_NO_MSG;
@@ -78,7 +79,10 @@ public class SkillIceBlock extends TargettedSkill {
     	private Location loc;
     	
 	    public IceBlockEffect(Skill skill, long duration) {
-				super(skill, "IceBlockFreeze", 100, duration);		
+				super(skill, "IceBlockFreeze", 100, duration);
+				this.types.add(EffectType.DISABLE);
+				this.types.add(EffectType.STUN);
+				this.types.add(EffectType.ICE);
 		}  
 
         @Override

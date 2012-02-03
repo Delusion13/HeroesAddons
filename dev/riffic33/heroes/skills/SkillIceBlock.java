@@ -3,19 +3,21 @@ package dev.riffic33.heroes.skills;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event.Priority;
-import org.bukkit.event.Event.Type;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockListener;
 import com.herocraftonline.dev.heroes.Heroes;
 import com.herocraftonline.dev.heroes.api.SkillResult;
+import com.herocraftonline.dev.heroes.effects.Effect;
 import com.herocraftonline.dev.heroes.effects.EffectType;
+import com.herocraftonline.dev.heroes.effects.PeriodicDamageEffect;
 import com.herocraftonline.dev.heroes.effects.PeriodicExpirableEffect;
 import com.herocraftonline.dev.heroes.hero.Hero;
 import com.herocraftonline.dev.heroes.skill.Skill;
@@ -30,19 +32,22 @@ public class SkillIceBlock extends TargettedSkill {
 	
     public SkillIceBlock(Heroes plugin) {
         super(plugin, "IceBlock");
-        setDescription("Encapsulate your target in ice for $1 seconds.");
+        setDescription("Encapsulate your target in ice for $1 seconds. ");
         setUsage("/skill iceblock");
         setArgumentRange(0, 0);
         setIdentifiers("skill iceblock");
         setTypes(SkillType.SILENCABLE, SkillType.ICE, SkillType.DEBUFF);  
         
-        registerEvent(Type.BLOCK_BREAK, new IceBreakerListener(), Priority.Normal);
+        Bukkit.getServer().getPluginManager().registerEvents(new SkillListener(), plugin);
     }
    
     @Override
     public ConfigurationSection getDefaultConfig() {
         ConfigurationSection node = super.getDefaultConfig();
-        node.set(Setting.DURATION.node(), 5000);	
+        node.set("BaseTickDamage", 0);
+        node.set("LevelMultiplier", 0.5);
+        node.set(Setting.DURATION.node(), 12000);
+        node.set(Setting.PERIOD.node(), 4000);
         return  node;
     }
     
@@ -54,19 +59,33 @@ public class SkillIceBlock extends TargettedSkill {
             Messaging.send(player, "Can't freeze the target");
             return SkillResult.INVALID_TARGET_NO_MSG;
         }
-    	int duration = (int) SkillConfigManager.getUseSetting(hero, this, Setting.DURATION, 5000, false);
+    	int bDmg 		= (int) SkillConfigManager.getUseSetting(hero, this, "BaseTickDamage", 3, false);
+    	float bMulti 	= (float) SkillConfigManager.getUseSetting(hero, this, "LevelMultiplier", 0.5, false);
+    	long duration 	= (int) SkillConfigManager.getUseSetting(hero, this, Setting.DURATION, 12000, false);
+    	long period 	= (int) SkillConfigManager.getUseSetting(hero, this, Setting.PERIOD.node(), 4000, false);
+    	int tickDmg = (int) (bMulti <= 0L ? bDmg : bDmg + bMulti*hero.getLevel());
     	IceBlockEffect ibe = new IceBlockEffect(this,  duration);
-    	if (target instanceof Player) {
-            plugin.getHeroManager().getHero((Player) target).addEffect(ibe);
-            return SkillResult.NORMAL;
-        } else if (target instanceof LivingEntity) {
-        	//TODO
-            //LivingEntity creature = (LivingEntity) target;
-            //UPDATING TO addCreatureEffect soon
-            //plugin.getEffectManager().addEntityEffect(creature, ibe);
-            return SkillResult.INVALID_TARGET;
-        } else 
-            return SkillResult.INVALID_TARGET;
+    	if( tickDmg > 0){
+    		IceBlockDmgEffect ibde = new IceBlockDmgEffect(this, period, duration, tickDmg, player);
+	    	if (target instanceof Player) {
+	            plugin.getHeroManager().getHero((Player) target).addEffect(ibe);
+	            plugin.getHeroManager().getHero((Player) target).addEffect(ibde);
+	            return SkillResult.NORMAL;
+	        } else if (target instanceof LivingEntity) {
+	        	//POSSIBLE FUTURE IMPLEMENTATION
+	            return SkillResult.INVALID_TARGET;
+	        } else 
+	            return SkillResult.INVALID_TARGET;
+    	}else{
+    		if (target instanceof Player) {
+	            plugin.getHeroManager().getHero((Player) target).addEffect(ibe);
+	            return SkillResult.NORMAL;
+	        } else if (target instanceof LivingEntity) {
+	        	//POSSIBLE FUTURE IMPLEMENTATION
+	            return SkillResult.INVALID_TARGET;
+	        } else 
+	            return SkillResult.INVALID_TARGET;
+    	}
     }
     
     
@@ -79,7 +98,7 @@ public class SkillIceBlock extends TargettedSkill {
     	private Location loc;
     	
 	    public IceBlockEffect(Skill skill, long duration) {
-				super(skill, "IceBlockFreeze", 100, duration);
+				super(skill, "IceBlockFreezeEffect", 100, duration);
 				this.types.add(EffectType.DISABLE);
 				this.types.add(EffectType.STUN);
 				this.types.add(EffectType.ICE);
@@ -111,6 +130,10 @@ public class SkillIceBlock extends TargettedSkill {
             		bChange.setType(Material.AIR);
             	}
             }
+            if( hero.hasEffect("IceBlockDmgEffect") ){
+            	Effect eff = hero.getEffect("IceBlockDmgEffect");
+            	hero.removeEffect(eff);
+            }
             broadcast(player.getLocation(), expireText, player.getDisplayName());
         }
         
@@ -130,6 +153,24 @@ public class SkillIceBlock extends TargettedSkill {
 	    
     }
     
+    public class IceBlockDmgEffect extends PeriodicDamageEffect{
+    	
+    	public IceBlockDmgEffect(Skill skill, long period, long duration, int tickDmg, Player applier) {
+			super(skill, "IceBlockDmgEffect", period, duration, tickDmg, applier);
+			this.types.add(EffectType.ICE);
+    	}  
+
+        @Override
+        public void remove(Hero hero) {
+            super.remove(hero);
+            if( hero.hasEffect("IceBlockFreezeEffect") ){
+            	Effect eff = hero.getEffect("IceBlockFreezeEffect");
+            	hero.removeEffect(eff);
+            }
+        }	
+    	
+    }
+    
     private HashSet<Block> placeIceBlock(LivingEntity target){
     	HashSet<Block> blocks = new HashSet<Block>(20);
     	Block iceLoc = target.getLocation().getBlock();
@@ -147,8 +188,9 @@ public class SkillIceBlock extends TargettedSkill {
     	return blocks;
     }
     
-    public class IceBreakerListener extends BlockListener{
+    public class SkillListener implements Listener{
     	
+    	@EventHandler
     	public void onBlockBreak(BlockBreakEvent event){
     		Player player 	= event.getPlayer();
     		Hero hero 		= plugin.getHeroManager().getHero(player);
@@ -161,8 +203,16 @@ public class SkillIceBlock extends TargettedSkill {
     
     @Override
     public String getDescription(Hero hero) {
-    	int duration = (int) SkillConfigManager.getUseSetting(hero, this, Setting.DURATION, 5000, false);
-        return getDescription().replace("$1", duration/1000 + "");
+    	int bDmg 		= (int) SkillConfigManager.getUseSetting(hero, this, "BaseTickDamage", 3, false);
+    	float bMulti 	= (float) SkillConfigManager.getUseSetting(hero, this, "LevelMultiplier", 0.5, false);
+    	long duration 	= (int) SkillConfigManager.getUseSetting(hero, this, Setting.DURATION, 12000, false);
+    	long period 	= (int) SkillConfigManager.getUseSetting(hero, this, Setting.PERIOD.node(), 4000, false);
+    	int tickDmg = (int) (bMulti <= 0L ? bDmg : bDmg + bMulti*hero.getLevel());
+        String description =  getDescription().replace("$1", duration/1000 + "");
+        if(tickDmg > 0){
+        	description.concat("Deals " + tickDmg + " every " + period + " seconds.");
+        }
+        return description;
     }
 
 }

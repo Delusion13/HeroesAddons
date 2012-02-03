@@ -65,6 +65,7 @@ public class SkillLandMine extends ActiveSkill {
     	private Block setter = null;
     	private int tripCount = 0;
     	
+    	
 		public ArmMineEffect(Skill skill, long duration, Block setter, int tripCount) {
 			super(skill, "ArmMine", duration);
 			this.setter = setter;
@@ -138,8 +139,8 @@ public class SkillLandMine extends ActiveSkill {
     
     @Override
     public String getDescription(Hero hero) {
-        int seconds = SkillConfigManager.getUseSetting(hero, this, "ReadiedTime", 1, false);
-        return getDescription().replace("$1", seconds + "");
+        int time = SkillConfigManager.getUseSetting(hero, this, "ReadiedTime", 1, false);
+        return getDescription().replace("$1", time/1000 + "");
     }
     
     

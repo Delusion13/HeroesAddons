@@ -1,12 +1,12 @@
 package dev.riffic33.heroes.skills;
 
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event.Priority;
-import org.bukkit.event.Event.Type;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerListener;
 import org.bukkit.util.Vector;
 
 import com.herocraftonline.dev.heroes.Heroes;
@@ -31,7 +31,7 @@ public class SkillRocketJump extends ActiveSkill {
         setIdentifiers("skill rocketjump");
         setTypes(SkillType.MOVEMENT, SkillType.PHYSICAL);
         
-        registerEvent(Type.PLAYER_INTERACT, new SkillUseListener(this), Priority.Highest);
+        Bukkit.getServer().getPluginManager().registerEvents(new SkillListener(this), plugin);
     }
 
     @Override
@@ -96,13 +96,14 @@ public class SkillRocketJump extends ActiveSkill {
     	
     }
     
-    public class SkillUseListener extends PlayerListener{
+    public class SkillListener implements Listener{
     	private Skill skill;
     	
-    	public SkillUseListener(Skill skill){
+    	public SkillListener(Skill skill){
     		this.skill = skill;
     	}
 		
+    	@EventHandler
     	public void onPlayerInteract(PlayerInteractEvent event){
     		Player player = event.getPlayer();
     		Hero hero = plugin.getHeroManager().getHero(player);

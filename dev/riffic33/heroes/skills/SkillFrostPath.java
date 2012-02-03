@@ -2,17 +2,18 @@ package dev.riffic33.heroes.skills;
 
 import java.util.HashSet;
 import java.util.Iterator;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event.Priority;
-import org.bukkit.event.Event.Type;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityListener;
 import org.bukkit.util.Vector;
 
 import com.herocraftonline.dev.heroes.Heroes;
@@ -40,7 +41,7 @@ public class SkillFrostPath extends ActiveSkill {
         setIdentifiers("skill frostpath");
         setTypes(SkillType.BUFF);
         
-        registerEvent(Type.ENTITY_DAMAGE, new SkillDmgListener(this), Priority.Low);
+        Bukkit.getServer().getPluginManager().registerEvents(new SkillDmgListener(this), plugin);
     }
    
     @Override
@@ -91,7 +92,7 @@ public class SkillFrostPath extends ActiveSkill {
     public class FrostPath extends PeriodicExpirableEffect{
     	
 		public FrostPath(Skill skill,long duration) {
-			super(skill, "FrostPath", 100, duration);
+			super(skill, "FrostPath", 50, duration);
 			this.types.add(EffectType.BENEFICIAL);
 		}
 		
@@ -130,13 +131,14 @@ public class SkillFrostPath extends ActiveSkill {
 		}
     }
     
-    public class SkillDmgListener extends EntityListener{
+    public class SkillDmgListener implements Listener{
     	
     	private Skill skill;
     	public SkillDmgListener(Skill skill){
     		this.skill = skill;
     	}
-    	@Override
+    	
+    	@EventHandler
     	public void onEntityDamage(EntityDamageEvent event){
     		
     		if (event.isCancelled() || !(event instanceof EntityDamageByEntityEvent)) {
@@ -145,7 +147,7 @@ public class SkillFrostPath extends ActiveSkill {
     		Entity player = event.getEntity();
     		if(player instanceof Player && plugin.getHeroManager().getHero((Player) player).hasEffect("FrostPath")){
     			Hero hero = plugin.getHeroManager().getHero((Player) player);
-    			if(SkillConfigManager.getSetting(hero.getHeroClass(), skill, "AttackCancels", true)){
+    			if(SkillConfigManager.getUseSetting(hero, skill, "AttackCancels", true)){
 	    			FrostPath playFp = (FrostPath) hero.getEffect("FrostPath");
 	    			hero.removeEffect(playFp);
     			}
@@ -157,7 +159,7 @@ public class SkillFrostPath extends ActiveSkill {
     public String getDescription(Hero hero) {
     	long duration = (Integer) SkillConfigManager.getSetting(hero.getHeroClass(), this, Setting.DURATION.node(), 60000);
     	boolean cancels = (boolean) SkillConfigManager.getSetting(hero.getHeroClass(), this, "AttackCancels", true);
-        return cancels ? getDescription().replace("$1", duration + " ") : getDescription().replace("$1", duration + " ").concat("Damage removes this buff.");
+        return cancels ? getDescription().replace("$1", duration/1000 + " ") : getDescription().replace("$1", duration/1000 + " ").concat("Damage removes this buff.");
     }
     
 }

@@ -35,7 +35,6 @@ public class SkillFrostPath extends ActiveSkill {
 	
     public SkillFrostPath(Heroes plugin) {
         super(plugin, "Frostpath");
-        setDescription("Turn water to ice as you walk for $1 seconds.");
         setUsage("/skill frostpath");
         setArgumentRange(0, 0);
         setIdentifiers("skill frostpath");
@@ -51,6 +50,16 @@ public class SkillFrostPath extends ActiveSkill {
         node.set("AttackCancels", true);
         node.set("IcePersists", true);
         return  node;
+    }
+    
+    @Override
+    public String getDescription(Hero hero) {
+    	long duration = (Integer) SkillConfigManager.getSetting(hero.getHeroClass(), this, Setting.DURATION.node(), 60000);
+    	boolean cancels = (boolean) SkillConfigManager.getSetting(hero.getHeroClass(), this, "AttackCancels", true);
+    	
+    	String base = String.format("Turn water to ice as you walk for %s seconds.", duration/1000D);
+    	
+        return cancels ? base : base.concat("Damage removes this buff.");
     }
     
     @Override
@@ -155,11 +164,6 @@ public class SkillFrostPath extends ActiveSkill {
     	}
     }
     
-    @Override
-    public String getDescription(Hero hero) {
-    	long duration = (Integer) SkillConfigManager.getSetting(hero.getHeroClass(), this, Setting.DURATION.node(), 60000);
-    	boolean cancels = (boolean) SkillConfigManager.getSetting(hero.getHeroClass(), this, "AttackCancels", true);
-        return cancels ? getDescription().replace("$1", duration/1000 + " ") : getDescription().replace("$1", duration/1000 + " ").concat("Damage removes this buff.");
-    }
+   
     
 }

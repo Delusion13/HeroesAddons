@@ -36,7 +36,6 @@ public class SkillCleave extends ActiveSkill {
 	
     public SkillCleave(Heroes plugin) {
         super(plugin, "Cleave");
-        setDescription("Attack up to $1 enemies within a $2 block radius in front of you for $3 damage.");
         setUsage("/skill cleave");
         setArgumentRange(0, 0);
         setIdentifiers("skill cleave");
@@ -54,6 +53,17 @@ public class SkillCleave extends ActiveSkill {
         node.set("LevelMultiplier", 0.5);
         node.set(Setting.RADIUS.node(), 5);
         return  node;
+    }
+    
+    @Override
+    public String getDescription(Hero hero) {
+    	int MaxTargets = (int) SkillConfigManager.getSetting(hero.getHeroClass(), this, "MaxTargets", 10);
+    	int radius = (int) SkillConfigManager.getSetting(hero.getHeroClass(), this, Setting.RADIUS.node(), 3);
+    	int bDmg 			= (int) SkillConfigManager.getUseSetting(hero, this, "BaseDamage", 3, false);
+    	float bMulti 		= (float) SkillConfigManager.getUseSetting(hero, this, "LevelMultiplier", 0.5, false);
+    	int newDmg 		= (int) (bMulti <= 0L ? bDmg : bDmg + bMulti*hero.getLevel());
+    	
+        return String.format("Attack up to %s enemies within a %s block radius in front of you for %s damage.", MaxTargets, radius, newDmg); 
     }
     
     @Override
@@ -190,14 +200,6 @@ public class SkillCleave extends ActiveSkill {
     }
     
     
-    @Override
-    public String getDescription(Hero hero) {
-    	int MaxTargets = (int) SkillConfigManager.getSetting(hero.getHeroClass(), this, "MaxTargets", 10);
-    	int radius = (int) SkillConfigManager.getSetting(hero.getHeroClass(), this, Setting.RADIUS.node(), 3);
-    	int bDmg 			= (int) SkillConfigManager.getUseSetting(hero, this, "BaseDamage", 3, false);
-    	float bMulti 		= (float) SkillConfigManager.getUseSetting(hero, this, "LevelMultiplier", 0.5, false);
-    	int newDmg 		= (int) (bMulti <= 0L ? bDmg : bDmg + bMulti*hero.getLevel());
-        return getDescription().replace("$1", MaxTargets + "").replace("$2", radius + "").replace("$3", newDmg + "");
-    }
+    
 
 }

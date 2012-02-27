@@ -24,7 +24,7 @@ public class SkillGroundPound extends ActiveSkill {
 	
     public SkillGroundPound(Heroes plugin) {
         super(plugin, "Groundpound");
-        setDescription("Hit the ground dealing $1 damage and sending $2 nearby enemies into the air");
+        setDescription();
         setUsage("/skill groundpound");
         setArgumentRange(0, 0);
         setIdentifiers("skill groundpound");
@@ -40,6 +40,16 @@ public class SkillGroundPound extends ActiveSkill {
         node.set(Setting.RADIUS.node(), 5);
         node.set("JumpMultiplier", 1.2);
         return  node;
+    }
+    
+    @Override
+    public String getDescription(Hero hero) {
+    	int bDmg 			= (int) SkillConfigManager.getUseSetting(hero, this, "BaseDamage", 3, false);
+    	float bMulti 		= (float) SkillConfigManager.getUseSetting(hero, this, "LevelMultiplier", 0.5, false);
+    	int targets 		= (int) SkillConfigManager.getUseSetting(hero, this, "Targets", 10, false);
+    	int newDmg 		= (int) (bMulti <= 0L ? bDmg : bDmg + bMulti*hero.getLevel());
+    	
+    	return String.format("Hit the ground dealing %s damage and sending %s nearby enemies into the air", newDmg, targets);
     }
     
     @Override
@@ -100,13 +110,6 @@ public class SkillGroundPound extends ActiveSkill {
     	return SkillResult.NORMAL;
     }
     
-    @Override
-    public String getDescription(Hero hero) {
-    	int bDmg 			= (int) SkillConfigManager.getUseSetting(hero, this, "BaseDamage", 3, false);
-    	float bMulti 		= (float) SkillConfigManager.getUseSetting(hero, this, "LevelMultiplier", 0.5, false);
-    	int targets 		= (int) SkillConfigManager.getUseSetting(hero, this, "Targets", 10, false);
-    	int newDmg 		= (int) (bMulti <= 0L ? bDmg : bDmg + bMulti*hero.getLevel());
-    	return getDescription().replace("$1", newDmg + "").replace("$2", targets + "");
-    }
+   
     
 }

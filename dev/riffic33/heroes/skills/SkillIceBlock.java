@@ -32,7 +32,6 @@ public class SkillIceBlock extends TargettedSkill {
 	
     public SkillIceBlock(Heroes plugin) {
         super(plugin, "IceBlock");
-        setDescription("Encapsulate your target in ice for $1 seconds. ");
         setUsage("/skill iceblock");
         setArgumentRange(0, 0);
         setIdentifiers("skill iceblock");
@@ -45,10 +44,23 @@ public class SkillIceBlock extends TargettedSkill {
     public ConfigurationSection getDefaultConfig() {
         ConfigurationSection node = super.getDefaultConfig();
         node.set("BaseTickDamage", 0);
-        node.set("LevelMultiplier", 0.5);
+        node.set("LevelMultiplier", 0.0);
         node.set(Setting.DURATION.node(), 12000);
         node.set(Setting.PERIOD.node(), 4000);
         return  node;
+    }
+    
+    @Override
+    public String getDescription(Hero hero) {
+    	int bDmg 		= (int) SkillConfigManager.getUseSetting(hero, this, "BaseTickDamage", 0, false);
+    	float bMulti 	= (float) SkillConfigManager.getUseSetting(hero, this, "LevelMultiplier", 0, false);
+    	long duration 	= (int) SkillConfigManager.getUseSetting(hero, this, Setting.DURATION, 12000, false);
+    	long period 	= (int) SkillConfigManager.getUseSetting(hero, this, Setting.PERIOD.node(), 4000, false);
+    	int tickDmg = (int) (bMulti <= 0L ? bDmg : bDmg + bMulti*hero.getLevel());
+    	
+        String base =  String.format("Encapsulate your target in ice for %s seconds. ", duration/1000D);
+        
+        return tickDmg > 0 ? base.concat("Deals " + tickDmg + " every " + period + " seconds.") : base;
     }
     
     @Override
@@ -59,8 +71,8 @@ public class SkillIceBlock extends TargettedSkill {
             Messaging.send(player, "Can't freeze the target");
             return SkillResult.INVALID_TARGET_NO_MSG;
         }
-    	int bDmg 		= (int) SkillConfigManager.getUseSetting(hero, this, "BaseTickDamage", 3, false);
-    	float bMulti 	= (float) SkillConfigManager.getUseSetting(hero, this, "LevelMultiplier", 0.5, false);
+    	int bDmg 		= (int) SkillConfigManager.getUseSetting(hero, this, "BaseTickDamage", 0, false);
+    	float bMulti 	= (float) SkillConfigManager.getUseSetting(hero, this, "LevelMultiplier", 0.0, false);
     	long duration 	= (int) SkillConfigManager.getUseSetting(hero, this, Setting.DURATION, 12000, false);
     	long period 	= (int) SkillConfigManager.getUseSetting(hero, this, Setting.PERIOD.node(), 4000, false);
     	int tickDmg = (int) (bMulti <= 0L ? bDmg : bDmg + bMulti*hero.getLevel());
@@ -98,7 +110,7 @@ public class SkillIceBlock extends TargettedSkill {
     	private Location loc;
     	
 	    public IceBlockEffect(Skill skill, long duration) {
-				super(skill, "IceBlockFreezeEffect", 100, duration);
+				super(skill, "IceBlockEffect", 100, duration);
 				this.types.add(EffectType.DISABLE);
 				this.types.add(EffectType.STUN);
 				this.types.add(EffectType.ICE);
@@ -158,15 +170,17 @@ public class SkillIceBlock extends TargettedSkill {
     	public IceBlockDmgEffect(Skill skill, long period, long duration, int tickDmg, Player applier) {
 			super(skill, "IceBlockDmgEffect", period, duration, tickDmg, applier);
 			this.types.add(EffectType.ICE);
+			this.types.add(EffectType.HARMFUL);
     	}  
 
         @Override
         public void remove(Hero hero) {
             super.remove(hero);
-            if( hero.hasEffect("IceBlockFreezeEffect") ){
-            	Effect eff = hero.getEffect("IceBlockFreezeEffect");
+            if( hero.hasEffect("IceBlockEffect") ){
+            	Effect eff = hero.getEffect("IceBlockEffect");
             	hero.removeEffect(eff);
             }
+            
         }	
     	
     }
@@ -194,25 +208,13 @@ public class SkillIceBlock extends TargettedSkill {
     	public void onBlockBreak(BlockBreakEvent event){
     		Player player 	= event.getPlayer();
     		Hero hero 		= plugin.getHeroManager().getHero(player);
-    		if(hero.hasEffect("IceBlockFreeze")){
+    		if(hero.hasEffect("IceBlockEffect")){
     			event.setCancelled(true);
     		}
     	}
   
     }
     
-    @Override
-    public String getDescription(Hero hero) {
-    	int bDmg 		= (int) SkillConfigManager.getUseSetting(hero, this, "BaseTickDamage", 3, false);
-    	float bMulti 	= (float) SkillConfigManager.getUseSetting(hero, this, "LevelMultiplier", 0.5, false);
-    	long duration 	= (int) SkillConfigManager.getUseSetting(hero, this, Setting.DURATION, 12000, false);
-    	long period 	= (int) SkillConfigManager.getUseSetting(hero, this, Setting.PERIOD.node(), 4000, false);
-    	int tickDmg = (int) (bMulti <= 0L ? bDmg : bDmg + bMulti*hero.getLevel());
-        String description =  getDescription().replace("$1", duration/1000 + "");
-        if(tickDmg > 0){
-        	description.concat("Deals " + tickDmg + " every " + period + " seconds.");
-        }
-        return description;
-    }
+   
 
 }

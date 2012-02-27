@@ -2,10 +2,13 @@ package dev.riffic33.heroes.skills;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+
 import com.herocraftonline.dev.heroes.Heroes;
 import com.herocraftonline.dev.heroes.api.SkillResult;
 import com.herocraftonline.dev.heroes.hero.Hero;
 import com.herocraftonline.dev.heroes.skill.ActiveSkill;
+import com.herocraftonline.dev.heroes.skill.Skill;
 import com.herocraftonline.dev.heroes.skill.SkillConfigManager;
 import com.herocraftonline.dev.heroes.skill.SkillType;
 import com.herocraftonline.dev.heroes.util.Messaging;
@@ -15,13 +18,12 @@ public class SkillLifeTap extends ActiveSkill {
 	
     public SkillLifeTap(Heroes plugin) {
         super(plugin, "Lifetap");
-        setDescription("Convert $1% health to $2% mana.");
         setUsage("/skill lifetap");
         setArgumentRange(0, 0);
         setIdentifiers("skill lifetap");
         setTypes(SkillType.SILENCABLE);  
     }
-   
+    
     @Override
     public ConfigurationSection getDefaultConfig() {
         ConfigurationSection node = super.getDefaultConfig();
@@ -30,6 +32,19 @@ public class SkillLifeTap extends ActiveSkill {
         node.set("Threshold", 20);
         return  node;
     }
+    
+    @Override
+    public String getDescription(Hero hero) {
+    	int healthLoss = (int) SkillConfigManager.getSetting(hero.getHeroClass(), this, "HealthLossPercentage", 10);
+    	int manaGain = (int) SkillConfigManager.getSetting(hero.getHeroClass(), this, "Manaregain", 10);
+    	int thresHold = (int) SkillConfigManager.getSetting(hero.getHeroClass(), this, "Threshold", 20);
+    	
+    	String base = String.format("Convert %s health to %s mana.", healthLoss+"%", manaGain);
+    	
+        return thresHold <= 0 ? base : base.concat(" Not available with less than " +thresHold+ "% health left");
+    }
+   
+    
     
     @Override
     public SkillResult use(Hero hero, String[] args) {
@@ -49,18 +64,11 @@ public class SkillLifeTap extends ActiveSkill {
         	return SkillResult.CANCELLED;
         }else{
         	int damage = (int) (Math.floor(max*((double)pctLoss/100D)));
-        	player.damage(damage, player);
+        	Skill.damageEntity(player, player, damage, DamageCause.CUSTOM);
         	hero.setMana( hero.getMana() + manaGain > 100 ? 100 : hero.getMana()+manaGain ); 
         	return SkillResult.NORMAL;
         }
     }
-    @Override
-    public String getDescription(Hero hero) {
-    	int healthLoss = (int) SkillConfigManager.getSetting(hero.getHeroClass(), this, "HealthLossPercentage", 10);
-    	int manaGain = (int) SkillConfigManager.getSetting(hero.getHeroClass(), this, "Manaregain", 10);
-    	int thresHold = (int) SkillConfigManager.getSetting(hero.getHeroClass(), this, "Threshold", 20);
-    	
-        return thresHold <= 0 ? getDescription().replace("$1", healthLoss + "").replace("$2", manaGain + "") : getDescription().replace("$1", healthLoss + "").replace("$2", manaGain + "").concat(" Not available with less than " +thresHold+ "% health left");
-    }
+    
     
 }

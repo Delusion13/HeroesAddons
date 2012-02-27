@@ -27,7 +27,6 @@ public class SkillLandMine extends ActiveSkill {
 	
     public SkillLandMine(Heroes plugin) {
         super(plugin, "Landmine");
-        setDescription("Place a trip mine, armed after $1 seconds.");
         setUsage("/skill landmine");
         setArgumentRange(0, 0);
         setIdentifiers("skill landmine");
@@ -40,6 +39,13 @@ public class SkillLandMine extends ActiveSkill {
         node.set(Setting.COOLDOWN.node(), 30000);
         node.set("ReadiedTime", 5000);
         return  node;
+    }
+    
+    @Override
+    public String getDescription(Hero hero) {
+        int time = SkillConfigManager.getUseSetting(hero, this, "ReadiedTime", 1, false);
+        
+        return String.format("Place a trip mine, armed after %s seconds.", time/1000);
     }
     
     @Override
@@ -137,11 +143,7 @@ public class SkillLandMine extends ActiveSkill {
     	}
     }
     
-    @Override
-    public String getDescription(Hero hero) {
-        int time = SkillConfigManager.getUseSetting(hero, this, "ReadiedTime", 1, false);
-        return getDescription().replace("$1", time/1000 + "");
-    }
+   
     
     
 }

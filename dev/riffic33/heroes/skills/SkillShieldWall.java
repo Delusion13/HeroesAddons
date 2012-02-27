@@ -24,7 +24,6 @@ public class SkillShieldWall extends ActiveSkill {
 	
     public SkillShieldWall(Heroes plugin) {
         super(plugin, "Shieldwall");
-        setDescription("Makes a wall of $1 which is $2 wide by $3 high up to $4 blocks away (Targetted)");
         setUsage("/skill shieldwall");
         setArgumentRange(0, 0);
         setIdentifiers("skill shieldwall");
@@ -40,6 +39,16 @@ public class SkillShieldWall extends ActiveSkill {
         node.set(Setting.DURATION.node(), 5000);
         node.set("BlockType", "STONE");
         return  node;
+    }
+    
+    @Override
+    public String getDescription(Hero hero) {
+    	int height 		= (int) SkillConfigManager.getUseSetting(hero, this, "Height", 3, false);
+    	int width 		= (int) SkillConfigManager.getUseSetting(hero, this, "width", 2, false);
+    	int maxDist 	= (int) SkillConfigManager.getUseSetting(hero, this, Setting.MAX_DISTANCE, 5, false);
+    	String type 	= SkillConfigManager.getUseSetting(hero, this, "BlockType", "STONE");
+    	
+        return String.format("Makes a wall of %s which is %s wide by %s high up to %s blocks away (Targetted)", type, width, height, maxDist);
     }
     
     @Override
@@ -136,13 +145,6 @@ public class SkillShieldWall extends ActiveSkill {
 	    return (angle <= 45D || angle > 135D) ? true : false;
     }
     
-    @Override
-    public String getDescription(Hero hero) {
-    	int height 		= (int) SkillConfigManager.getUseSetting(hero, this, "Height", 3, false);
-    	int width 		= (int) SkillConfigManager.getUseSetting(hero, this, "width", 2, false);
-    	int maxDist 	= (int) SkillConfigManager.getUseSetting(hero, this, Setting.MAX_DISTANCE, 5, false);
-    	String type 	= SkillConfigManager.getUseSetting(hero, this, "BlockType", "STONE");
-        return getDescription().replace("$1", type).replace("$2", width+"").replace("$3", height+"").replace("$4", maxDist+"");
-    }
+   
     
 }

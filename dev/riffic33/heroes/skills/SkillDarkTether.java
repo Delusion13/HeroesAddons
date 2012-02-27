@@ -22,7 +22,6 @@ public class SkillDarkTether extends TargettedSkill {
 	
     public SkillDarkTether(Heroes plugin) {
         super(plugin, "Darktether");
-        setDescription("Put a damage over time effect on the target dealing $1 damage times how $2 target is to the caster every $3 seconds over $4 seconds. Max effective distance of $5 blocks");
         setUsage("/skill darktether");
         setArgumentRange(0, 0);
         setIdentifiers("skill darktether");
@@ -41,6 +40,20 @@ public class SkillDarkTether extends TargettedSkill {
         node.set("DamageByCloseness", false);
         
         return  node;
+    }
+    
+    @Override
+    public String getDescription(Hero hero) {
+    	int bDmg 			= (int) SkillConfigManager.getUseSetting(hero, this, "BaseTickDamage", 3, false);
+    	float bMulti 		= (float) SkillConfigManager.getUseSetting(hero, this, "LevelMultiplier", 0.5, false);
+    	long duration 		= (int) SkillConfigManager.getUseSetting(hero, this, Setting.DURATION, 12000, false);
+    	long period 		= (int) SkillConfigManager.getUseSetting(hero, this, Setting.PERIOD.node(), 4000, false);
+    	int maxDisti 		= (int) SkillConfigManager.getUseSetting(hero, this, "MaxDistance", 3, false);
+    	int maxDist			= maxDisti <= 0 ? 1 : maxDisti;
+    	boolean closeNess 	= (boolean) SkillConfigManager.getUseSetting(hero, this, "DamageByCloseness", false);
+    	int tickDmg 		= (int) (bMulti <= 0L ? bDmg : bDmg + bMulti*hero.getLevel());
+    	
+        return String.format("Put a damage over time effect on the target dealing %s damage times how %s target is to the caster every %s seconds over %s seconds. Max effective distance of %s blocks", tickDmg, closeNess ? "close" : "far away", period/1000D, duration/1000D, maxDist);
     }
     
     
@@ -157,17 +170,6 @@ public class SkillDarkTether extends TargettedSkill {
 		return rDmg;	
     }
     
-    @Override
-    public String getDescription(Hero hero) {
-    	int bDmg 			= (int) SkillConfigManager.getUseSetting(hero, this, "BaseTickDamage", 3, false);
-    	float bMulti 		= (float) SkillConfigManager.getUseSetting(hero, this, "LevelMultiplier", 0.5, false);
-    	long duration 		= (int) SkillConfigManager.getUseSetting(hero, this, Setting.DURATION, 12000, false);
-    	long period 		= (int) SkillConfigManager.getUseSetting(hero, this, Setting.PERIOD.node(), 4000, false);
-    	int maxDisti 		= (int) SkillConfigManager.getUseSetting(hero, this, "MaxDistance", 3, false);
-    	int maxDist			= maxDisti <= 0 ? 1 : maxDisti;
-    	boolean closeNess 	= (boolean) SkillConfigManager.getUseSetting(hero, this, "DamageByCloseness", false);
-    	int tickDmg 		= (int) (bMulti <= 0L ? bDmg : bDmg + bMulti*hero.getLevel());
-        return getDescription().replace("$1", tickDmg + "").replace("$2", closeNess ? "close" : "far away").replace("$3", period/1000 + "").replace("$4", duration/1000 + "").replace("$5", maxDist + "");
-    }
+    
 
 }

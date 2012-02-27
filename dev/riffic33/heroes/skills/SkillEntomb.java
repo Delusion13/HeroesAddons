@@ -32,7 +32,6 @@ public class SkillEntomb extends TargettedSkill {
 	
     public SkillEntomb(Heroes plugin) {
         super(plugin, "Entomb");
-        setDescription("Encase your target in glass for $1 seconds. ");
         setUsage("/skill entomb");
         setArgumentRange(0, 0);
         setIdentifiers("skill entomb");
@@ -49,6 +48,19 @@ public class SkillEntomb extends TargettedSkill {
         node.set(Setting.DURATION.node(), 12000);
         node.set(Setting.PERIOD.node(), 4000);
         return  node;
+    }
+    
+    @Override
+    public String getDescription(Hero hero) {
+    	int bDmg 		= (int) SkillConfigManager.getUseSetting(hero, this, "BaseTickDamage", 3, false);
+    	float bMulti 	= (float) SkillConfigManager.getUseSetting(hero, this, "LevelMultiplier", 0.5, false);
+    	long duration 	= (int) SkillConfigManager.getUseSetting(hero, this, Setting.DURATION, 12000, false);
+    	long period 	= (int) SkillConfigManager.getUseSetting(hero, this, Setting.PERIOD.node(), 4000, false);
+    	int tickDmg = (int) (bMulti <= 0L ? bDmg : bDmg + bMulti*hero.getLevel());
+        
+        String base = String.format("Encase your target in glass for $1 seconds. ", duration/1000);
+        
+        return tickDmg > 0 ? base.concat("Deals " + tickDmg + " every " + period + " seconds.") : base; 
     }
     
     @Override
@@ -202,18 +214,6 @@ public class SkillEntomb extends TargettedSkill {
   
     }
     
-    @Override
-    public String getDescription(Hero hero) {
-    	int bDmg 		= (int) SkillConfigManager.getUseSetting(hero, this, "BaseTickDamage", 3, false);
-    	float bMulti 	= (float) SkillConfigManager.getUseSetting(hero, this, "LevelMultiplier", 0.5, false);
-    	long duration 	= (int) SkillConfigManager.getUseSetting(hero, this, Setting.DURATION, 12000, false);
-    	long period 	= (int) SkillConfigManager.getUseSetting(hero, this, Setting.PERIOD.node(), 4000, false);
-    	int tickDmg = (int) (bMulti <= 0L ? bDmg : bDmg + bMulti*hero.getLevel());
-        String description =  getDescription().replace("$1", duration/1000 + "");
-        if(tickDmg > 0){
-        	description.concat("Deals " + tickDmg + " every " + period + " seconds.");
-        }
-        return description;
-    }
+   
 
 }

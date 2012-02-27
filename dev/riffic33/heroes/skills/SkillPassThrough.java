@@ -18,7 +18,6 @@ public class SkillPassThrough extends ActiveSkill {
 	
     public SkillPassThrough(Heroes plugin) {
         super(plugin, "Passthrough");
-        setDescription("Move through a wall of blocks");
         setUsage("/skill passthrough");
         setArgumentRange(0, 0);
         setIdentifiers("skill passthrough");
@@ -29,6 +28,11 @@ public class SkillPassThrough extends ActiveSkill {
     public ConfigurationSection getDefaultConfig() {
         ConfigurationSection node = super.getDefaultConfig();
         return  node;
+    }
+    
+    @Override
+    public String getDescription(Hero hero) {
+        return String.format("Move through a wall of blocks");
     }
     
     @Override
@@ -78,9 +82,6 @@ public class SkillPassThrough extends ActiveSkill {
         }
     }
     
-    @Override
-    public String getDescription(Hero hero) {
-        return getDescription();
-    }
+    
     
 }

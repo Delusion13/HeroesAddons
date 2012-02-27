@@ -20,7 +20,6 @@ public class SkillAffliction extends TargettedSkill {
 	
     public SkillAffliction(Heroes plugin) {
         super(plugin, "Affliction");
-        setDescription("Put a damage over time effect on the target dealing $1 damage every $2 seconds over $3 seconds.");
         setUsage("/skill affliction");
         setArgumentRange(0, 0);
         setIdentifiers("skill affliction");
@@ -40,6 +39,20 @@ public class SkillAffliction extends TargettedSkill {
         return  node;
     }
     
+    @Override
+    public String getDescription(Hero hero) {
+    	int bDmg 		= (int) SkillConfigManager.getUseSetting(hero, this, "BaseTickDamage", 3, false);
+    	float bMulti 	= (float) SkillConfigManager.getUseSetting(hero, this, "LevelMultiplier", 0.5, false);
+    	long period 	= (int) SkillConfigManager.getUseSetting(hero, this, Setting.PERIOD.node(), 4000, false);
+    	long duration 	= (int) SkillConfigManager.getUseSetting(hero, this, Setting.DURATION, 12000, false);
+    	int jumps 		= (int) SkillConfigManager.getUseSetting(hero, this, "MaxJumps", 3, false);
+    	int tickDmg = (int) (bMulti <= 0L ? bDmg : bDmg + bMulti*hero.getLevel());
+    	String dJump = jumps > 0 ? "Jumps " +jumps+ " times":"";
+    	
+    	String base = String.format("Put a damage over time effect on the target dealing %s damage every %s seconds over %s seconds.", tickDmg, period/1000L, duration/1000L);
+    	
+        return base + dJump;
+    }
     
     @Override
     public SkillResult use(Hero hero, LivingEntity target, String[] args) {
@@ -71,8 +84,8 @@ public class SkillAffliction extends TargettedSkill {
     	//Future ?
     	//private HashSet<LivingEntity> tracked = new HashSet<LivingEntity>(30);
     
-    	private String applyText;
-    	private String expireText;
+    	private String applyText = "Affiction cast on $1";
+    	private String expireText = "Affiction removed from $1";
     	private int maxJumps;
     	private Skill skill;
     	
@@ -83,8 +96,6 @@ public class SkillAffliction extends TargettedSkill {
 				this.types.add(EffectType.HARMFUL);
 				this.skill = skill;
 				this.maxJumps = maxJumps;
-				this.applyText = "Affiction cast on $1";
-				this.expireText = "Affiction removed from $1";
 		}  
 
         @Override
@@ -156,16 +167,6 @@ public class SkillAffliction extends TargettedSkill {
 	    
     }
 
-    @Override
-    public String getDescription(Hero hero) {
-    	int bDmg 		= (int) SkillConfigManager.getUseSetting(hero, this, "BaseTickDamage", 3, false);
-    	float bMulti 	= (float) SkillConfigManager.getUseSetting(hero, this, "LevelMultiplier", 0.5, false);
-    	long period 	= (int) SkillConfigManager.getUseSetting(hero, this, Setting.PERIOD.node(), 4000, false);
-    	long duration 	= (int) SkillConfigManager.getUseSetting(hero, this, Setting.DURATION, 12000, false);
-    	int jumps 		= (int) SkillConfigManager.getUseSetting(hero, this, "MaxJumps", 3, false);
-    	int tickDmg = (int) (bMulti <= 0L ? bDmg : bDmg + bMulti*hero.getLevel());
-    	String dJump = jumps > 0 ? "Jumps " +jumps+ " times":"";
-        return getDescription().replace("$1", tickDmg + "").replace("$2", period/1000L + "").replace("$3", duration/1000L+"") + dJump;
-    }
+    
 
 }

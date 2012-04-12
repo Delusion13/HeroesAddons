@@ -13,19 +13,21 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import com.herocraftonline.dev.heroes.Heroes;
-import com.herocraftonline.dev.heroes.api.SkillResult;
-import com.herocraftonline.dev.heroes.effects.Effect;
-import com.herocraftonline.dev.heroes.effects.EffectType;
-import com.herocraftonline.dev.heroes.effects.PeriodicDamageEffect;
-import com.herocraftonline.dev.heroes.effects.PeriodicExpirableEffect;
-import com.herocraftonline.dev.heroes.hero.Hero;
-import com.herocraftonline.dev.heroes.skill.Skill;
-import com.herocraftonline.dev.heroes.skill.SkillConfigManager;
-import com.herocraftonline.dev.heroes.skill.SkillType;
-import com.herocraftonline.dev.heroes.skill.TargettedSkill;
-import com.herocraftonline.dev.heroes.util.Messaging;
-import com.herocraftonline.dev.heroes.util.Setting;
+
+import com.herocraftonline.heroes.Heroes;
+import com.herocraftonline.heroes.api.SkillResult;
+import com.herocraftonline.heroes.characters.Hero;
+import com.herocraftonline.heroes.characters.Monster;
+import com.herocraftonline.heroes.characters.effects.Effect;
+import com.herocraftonline.heroes.characters.effects.EffectType;
+import com.herocraftonline.heroes.characters.effects.PeriodicDamageEffect;
+import com.herocraftonline.heroes.characters.effects.PeriodicExpirableEffect;
+import com.herocraftonline.heroes.characters.skill.Skill;
+import com.herocraftonline.heroes.characters.skill.SkillConfigManager;
+import com.herocraftonline.heroes.characters.skill.SkillType;
+import com.herocraftonline.heroes.characters.skill.TargettedSkill;
+import com.herocraftonline.heroes.util.Messaging;
+import com.herocraftonline.heroes.util.Setting;
 
 
 public class SkillIceBlock extends TargettedSkill {
@@ -80,8 +82,8 @@ public class SkillIceBlock extends TargettedSkill {
     	if( tickDmg > 0){
     		IceBlockDmgEffect ibde = new IceBlockDmgEffect(this, period, duration, tickDmg, player);
 	    	if (target instanceof Player) {
-	            plugin.getHeroManager().getHero((Player) target).addEffect(ibe);
-	            plugin.getHeroManager().getHero((Player) target).addEffect(ibde);
+	    		plugin.getCharacterManager().getHero( (Player) target ).addEffect(ibe);
+	    		plugin.getCharacterManager().getHero( (Player) target ).addEffect(ibde);
 	            return SkillResult.NORMAL;
 	        } else if (target instanceof LivingEntity) {
 	        	//POSSIBLE FUTURE IMPLEMENTATION
@@ -90,7 +92,7 @@ public class SkillIceBlock extends TargettedSkill {
 	            return SkillResult.INVALID_TARGET;
     	}else{
     		if (target instanceof Player) {
-	            plugin.getHeroManager().getHero((Player) target).addEffect(ibe);
+    			plugin.getCharacterManager().getHero( (Player) target ).addEffect(ibe);
 	            return SkillResult.NORMAL;
 	        } else if (target instanceof LivingEntity) {
 	        	//POSSIBLE FUTURE IMPLEMENTATION
@@ -117,8 +119,8 @@ public class SkillIceBlock extends TargettedSkill {
 		}  
 
         @Override
-        public void apply(Hero hero) {
-            super.apply(hero);
+        public void applyToHero(Hero hero) {
+            super.applyToHero(hero);
             Player player = hero.getPlayer();
             broadcast(player.getLocation(), applyText, player.getDisplayName());
             Location pLoc = player.getLocation();
@@ -132,8 +134,8 @@ public class SkillIceBlock extends TargettedSkill {
         }
 
         @Override
-        public void remove(Hero hero) {
-            super.remove(hero);
+        public void removeFromHero(Hero hero) {
+            super.removeFromHero(hero);
             Player player = hero.getPlayer();
             Iterator<Block> iceIter = blocks.iterator();
             while(iceIter.hasNext()){
@@ -150,8 +152,7 @@ public class SkillIceBlock extends TargettedSkill {
         }
         
         @Override
-        public void tick(Hero hero) {
-            super.tick(hero);
+        public void tickHero(Hero hero) {
             Player p = hero.getPlayer();
             Location location = p.getLocation();
             if (location == null)
@@ -162,20 +163,24 @@ public class SkillIceBlock extends TargettedSkill {
                 p.teleport(loc);
             }
         }
+
+		@Override
+		public void tickMonster(Monster arg0) {
+		}
 	    
     }
     
     public class IceBlockDmgEffect extends PeriodicDamageEffect{
     	
-    	public IceBlockDmgEffect(Skill skill, long period, long duration, int tickDmg, Player applier) {
+    	public IceBlockDmgEffect( Skill skill, long period, long duration, int tickDmg, Player applier ) {
 			super(skill, "IceBlockDmgEffect", period, duration, tickDmg, applier);
 			this.types.add(EffectType.ICE);
 			this.types.add(EffectType.HARMFUL);
     	}  
 
         @Override
-        public void remove(Hero hero) {
-            super.remove(hero);
+        public void removeFromHero( Hero hero ) {
+            super.removeFromHero(hero);
             if( hero.hasEffect("IceBlockEffect") ){
             	Effect eff = hero.getEffect("IceBlockEffect");
             	hero.removeEffect(eff);
@@ -185,14 +190,14 @@ public class SkillIceBlock extends TargettedSkill {
     	
     }
     
-    private HashSet<Block> placeIceBlock(LivingEntity target){
+    private HashSet<Block> placeIceBlock( LivingEntity target ){
     	HashSet<Block> blocks = new HashSet<Block>(20);
     	Block iceLoc = target.getLocation().getBlock();
     	for(int y=0; y<2; y++){
     		for(int x=-1; x<2; x++){
     			for(int z=-1; z<2; z++){
-        			if(iceLoc.getRelative(x, y, z).isEmpty()){
-    		    			Block iBlock = iceLoc.getRelative(x, y, z);
+        			if(iceLoc.getRelative( x, y, z ).isEmpty()){
+    		    			Block iBlock = iceLoc.getRelative( x, y, z );
     						iBlock.setType(Material.ICE);
     						blocks.add(iBlock);
     				}
@@ -205,9 +210,9 @@ public class SkillIceBlock extends TargettedSkill {
     public class SkillListener implements Listener{
     	
     	@EventHandler
-    	public void onBlockBreak(BlockBreakEvent event){
+    	public void onBlockBreak( BlockBreakEvent event ){
     		Player player 	= event.getPlayer();
-    		Hero hero 		= plugin.getHeroManager().getHero(player);
+    		Hero hero 		= plugin.getCharacterManager().getHero( player );
     		if(hero.hasEffect("IceBlockEffect")){
     			event.setCancelled(true);
     		}

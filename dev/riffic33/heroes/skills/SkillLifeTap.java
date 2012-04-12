@@ -4,14 +4,13 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
-import com.herocraftonline.dev.heroes.Heroes;
-import com.herocraftonline.dev.heroes.api.SkillResult;
-import com.herocraftonline.dev.heroes.hero.Hero;
-import com.herocraftonline.dev.heroes.skill.ActiveSkill;
-import com.herocraftonline.dev.heroes.skill.Skill;
-import com.herocraftonline.dev.heroes.skill.SkillConfigManager;
-import com.herocraftonline.dev.heroes.skill.SkillType;
-import com.herocraftonline.dev.heroes.util.Messaging;
+import com.herocraftonline.heroes.Heroes;
+import com.herocraftonline.heroes.api.SkillResult;
+import com.herocraftonline.heroes.characters.Hero;
+import com.herocraftonline.heroes.characters.skill.ActiveSkill;
+import com.herocraftonline.heroes.characters.skill.SkillConfigManager;
+import com.herocraftonline.heroes.characters.skill.SkillType;
+import com.herocraftonline.heroes.util.Messaging;
 
 
 public class SkillLifeTap extends ActiveSkill {
@@ -64,7 +63,7 @@ public class SkillLifeTap extends ActiveSkill {
         	return SkillResult.CANCELLED;
         }else{
         	int damage = (int) (Math.floor(max*((double)pctLoss/100D)));
-        	Skill.damageEntity(player, player, damage, DamageCause.CUSTOM);
+        	damageEntity(player, player, damage, DamageCause.CUSTOM);
         	hero.setMana( hero.getMana() + manaGain > 100 ? 100 : hero.getMana()+manaGain ); 
         	return SkillResult.NORMAL;
         }

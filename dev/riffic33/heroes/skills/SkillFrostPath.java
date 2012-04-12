@@ -16,17 +16,18 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.util.Vector;
 
-import com.herocraftonline.dev.heroes.Heroes;
-import com.herocraftonline.dev.heroes.api.SkillResult;
-import com.herocraftonline.dev.heroes.effects.EffectType;
-import com.herocraftonline.dev.heroes.effects.PeriodicExpirableEffect;
-import com.herocraftonline.dev.heroes.hero.Hero;
-import com.herocraftonline.dev.heroes.skill.ActiveSkill;
-import com.herocraftonline.dev.heroes.skill.Skill;
-import com.herocraftonline.dev.heroes.skill.SkillConfigManager;
-import com.herocraftonline.dev.heroes.skill.SkillType;
-import com.herocraftonline.dev.heroes.util.Messaging;
-import com.herocraftonline.dev.heroes.util.Setting;
+import com.herocraftonline.heroes.Heroes;
+import com.herocraftonline.heroes.api.SkillResult;
+import com.herocraftonline.heroes.characters.Hero;
+import com.herocraftonline.heroes.characters.Monster;
+import com.herocraftonline.heroes.characters.effects.EffectType;
+import com.herocraftonline.heroes.characters.effects.PeriodicExpirableEffect;
+import com.herocraftonline.heroes.characters.skill.ActiveSkill;
+import com.herocraftonline.heroes.characters.skill.Skill;
+import com.herocraftonline.heroes.characters.skill.SkillConfigManager;
+import com.herocraftonline.heroes.characters.skill.SkillType;
+import com.herocraftonline.heroes.util.Messaging;
+import com.herocraftonline.heroes.util.Setting;
 
 public class SkillFrostPath extends ActiveSkill {
 	private BlockFace[] bCheck = {BlockFace.SELF, BlockFace.NORTH_WEST, BlockFace.NORTH, BlockFace.NORTH_EAST, BlockFace.EAST, BlockFace.SOUTH_EAST, BlockFace.SOUTH, BlockFace.SOUTH_WEST, BlockFace.WEST};
@@ -106,14 +107,14 @@ public class SkillFrostPath extends ActiveSkill {
 		}
 		
 		@Override
-        public void apply(Hero hero) {
-            super.apply(hero);
+        public void applyToHero(Hero hero) {
+            super.applyToHero(hero);
             Messaging.send(hero.getPlayer(), "Now Frost pathing");
         }
 		
 		@Override
-        public void remove(Hero hero) {
-            super.remove(hero);
+        public void removeFromHero(Hero hero) {
+            super.removeFromHero(hero);
             if(!icePersists){
             	clearOldBlocks(hero.getPlayer(), true);
             }
@@ -121,8 +122,7 @@ public class SkillFrostPath extends ActiveSkill {
         }
 		
 		@Override
-		public void tick(Hero hero){
-			super.tick(hero);
+		public void tickHero(Hero hero){
 			Player player = hero.getPlayer();
 			Block bLoc = player.getLocation().getBlock().getRelative(BlockFace.DOWN);
 			for(BlockFace bFace : bCheck){
@@ -137,6 +137,10 @@ public class SkillFrostPath extends ActiveSkill {
 			if(!icePersists){
 				clearOldBlocks(hero.getPlayer(), false);
 			}
+		}
+
+		@Override
+		public void tickMonster(Monster arg0) {
 		}
     }
     
@@ -154,8 +158,8 @@ public class SkillFrostPath extends ActiveSkill {
                 return;
             }
     		Entity player = event.getEntity();
-    		if(player instanceof Player && plugin.getHeroManager().getHero((Player) player).hasEffect("FrostPath")){
-    			Hero hero = plugin.getHeroManager().getHero((Player) player);
+    		if(player instanceof Player && plugin.getCharacterManager().getHero( (Player) player ).hasEffect("FrostPath")){
+    			Hero hero = plugin.getCharacterManager().getHero( (Player) player );
     			if(SkillConfigManager.getUseSetting(hero, skill, "AttackCancels", true)){
 	    			FrostPath playFp = (FrostPath) hero.getEffect("FrostPath");
 	    			hero.removeEffect(playFp);

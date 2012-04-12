@@ -19,18 +19,18 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-import com.herocraftonline.dev.heroes.Heroes;
-import com.herocraftonline.dev.heroes.api.SkillResult;
-import com.herocraftonline.dev.heroes.effects.ExpirableEffect;
-import com.herocraftonline.dev.heroes.hero.Hero;
-import com.herocraftonline.dev.heroes.party.HeroParty;
-import com.herocraftonline.dev.heroes.skill.ActiveSkill;
-import com.herocraftonline.dev.heroes.skill.Skill;
-import com.herocraftonline.dev.heroes.skill.SkillConfigManager;
-import com.herocraftonline.dev.heroes.skill.SkillType;
-import com.herocraftonline.dev.heroes.util.Messaging;
-import com.herocraftonline.dev.heroes.util.Setting;
-import com.herocraftonline.dev.heroes.util.Util;
+import com.herocraftonline.heroes.Heroes;
+import com.herocraftonline.heroes.api.SkillResult;
+import com.herocraftonline.heroes.characters.Hero;
+import com.herocraftonline.heroes.characters.effects.ExpirableEffect;
+import com.herocraftonline.heroes.characters.party.HeroParty;
+import com.herocraftonline.heroes.characters.skill.ActiveSkill;
+import com.herocraftonline.heroes.characters.skill.Skill;
+import com.herocraftonline.heroes.characters.skill.SkillConfigManager;
+import com.herocraftonline.heroes.characters.skill.SkillType;
+import com.herocraftonline.heroes.util.Messaging;
+import com.herocraftonline.heroes.util.Setting;
+import com.herocraftonline.heroes.util.Util;
 
 public class SkillCleave extends ActiveSkill {
 	
@@ -85,13 +85,11 @@ public class SkillCleave extends ActiveSkill {
 			this.duration = duration;
 		}
 		
-		@Override
-        public void apply(Hero hero) {
+		public void apply(Hero hero) {
             super.apply(hero);
             Messaging.send(hero.getPlayer(), "Cleaving available on your next attack for $1 seconds", duration/1000);
         }
 		
-        @Override
         public void remove(Hero hero) {
             super.remove(hero);
             Messaging.send(hero.getPlayer(), "Can no longer cleave");
@@ -124,7 +122,7 @@ public class SkillCleave extends ActiveSkill {
             }
             
             Player player = (Player) subEvent.getDamager();
-            Hero hero = plugin.getHeroManager().getHero(player);
+            Hero hero = plugin.getCharacterManager().getHero(player);
             if (hero.hasEffect("CleaveBuff")) {
             	
                 ItemStack item = player.getItemInHand();
@@ -146,7 +144,8 @@ public class SkillCleave extends ActiveSkill {
     }
     
     private int damageAround(Player player, Entity exception, Skill skill, int newDmg){
-    	Hero hero = plugin.getHeroManager().getHero(player);
+    	
+    	Hero hero = plugin.getCharacterManager().getHero(player);
     	int MaxTargets = (int) SkillConfigManager.getUseSetting(hero, this, "MaxTargets", 3, false) - 1;
     	int radius = (int) SkillConfigManager.getUseSetting(hero, this, Setting.RADIUS, 5, false);
 

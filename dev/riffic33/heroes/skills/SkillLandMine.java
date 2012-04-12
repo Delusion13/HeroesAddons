@@ -7,17 +7,17 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import com.herocraftonline.dev.heroes.Heroes;
-import com.herocraftonline.dev.heroes.api.SkillResult;
-import com.herocraftonline.dev.heroes.effects.EffectType;
-import com.herocraftonline.dev.heroes.effects.ExpirableEffect;
-import com.herocraftonline.dev.heroes.hero.Hero;
-import com.herocraftonline.dev.heroes.skill.ActiveSkill;
-import com.herocraftonline.dev.heroes.skill.Skill;
-import com.herocraftonline.dev.heroes.skill.SkillConfigManager;
-import com.herocraftonline.dev.heroes.skill.SkillType;
-import com.herocraftonline.dev.heroes.util.Messaging;
-import com.herocraftonline.dev.heroes.util.Setting;
+import com.herocraftonline.heroes.Heroes;
+import com.herocraftonline.heroes.api.SkillResult;
+import com.herocraftonline.heroes.characters.Hero;
+import com.herocraftonline.heroes.characters.effects.EffectType;
+import com.herocraftonline.heroes.characters.effects.ExpirableEffect;
+import com.herocraftonline.heroes.characters.skill.ActiveSkill;
+import com.herocraftonline.heroes.characters.skill.Skill;
+import com.herocraftonline.heroes.characters.skill.SkillConfigManager;
+import com.herocraftonline.heroes.characters.skill.SkillType;
+import com.herocraftonline.heroes.util.Messaging;
+import com.herocraftonline.heroes.util.Setting;
 
 public class SkillLandMine extends ActiveSkill {
 	//List of relative blocks to check when placing stone_plates to trip mine
@@ -80,14 +80,14 @@ public class SkillLandMine extends ActiveSkill {
 		}
 		
 		@Override
-        public void apply(Hero hero) {
-            super.apply(hero);
+        public void applyToHero(Hero hero) {
+            super.applyToHero(hero);
             Messaging.send(hero.getPlayer(), "Setting mine with $1 trip(s) in $2 seconds", tripCount, this.getDuration()/1000);
         }
 		
 		@Override
-        public void remove(Hero hero) {
-            super.remove(hero);
+        public void removeFromHero(Hero hero) {
+            super.removeFromHero(hero);
             setTrips(setter);
             Messaging.send(hero.getPlayer(), "Mine Armed!");
         }	

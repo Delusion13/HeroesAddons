@@ -9,17 +9,17 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.util.Vector;
 
-import com.herocraftonline.dev.heroes.Heroes;
-import com.herocraftonline.dev.heroes.api.SkillResult;
-import com.herocraftonline.dev.heroes.effects.EffectType;
-import com.herocraftonline.dev.heroes.effects.ExpirableEffect;
-import com.herocraftonline.dev.heroes.hero.Hero;
-import com.herocraftonline.dev.heroes.skill.ActiveSkill;
-import com.herocraftonline.dev.heroes.skill.Skill;
-import com.herocraftonline.dev.heroes.skill.SkillConfigManager;
-import com.herocraftonline.dev.heroes.skill.SkillType;
-import com.herocraftonline.dev.heroes.util.Messaging;
-import com.herocraftonline.dev.heroes.util.Setting;
+import com.herocraftonline.heroes.Heroes;
+import com.herocraftonline.heroes.api.SkillResult;
+import com.herocraftonline.heroes.characters.Hero;
+import com.herocraftonline.heroes.characters.effects.EffectType;
+import com.herocraftonline.heroes.characters.effects.ExpirableEffect;
+import com.herocraftonline.heroes.characters.skill.ActiveSkill;
+import com.herocraftonline.heroes.characters.skill.Skill;
+import com.herocraftonline.heroes.characters.skill.SkillConfigManager;
+import com.herocraftonline.heroes.characters.skill.SkillType;
+import com.herocraftonline.heroes.util.Messaging;
+import com.herocraftonline.heroes.util.Setting;
 
 public class SkillRocketJump extends ActiveSkill {
 		
@@ -40,8 +40,6 @@ public class SkillRocketJump extends ActiveSkill {
         node.set("rocket-boosts", 3);
         node.set(Setting.DURATION.node(), 10000);
         node.set(Setting.COOLDOWN.node(), 10000);
-        node.set(Setting.REAGENT.node(), "REDSTONE");
-        node.set(Setting.REAGENT_COST.node(), 1);
         return node;
     }
     
@@ -79,14 +77,13 @@ public class SkillRocketJump extends ActiveSkill {
 		}
 		
 		@Override
-        public void apply(Hero hero) {
-            super.apply(hero);
-
+        public void applyToHero( Hero hero ) {
+            super.applyToHero( hero );
         }
 		
 		@Override
-        public void remove(Hero hero) {
-            super.remove(hero);
+        public void removeFromHero( Hero hero ) {
+            super.removeFromHero(hero);
             Messaging.send(hero.getPlayer(), "Rocket Pack ran out of fuel");
         }
 		
@@ -111,7 +108,7 @@ public class SkillRocketJump extends ActiveSkill {
     	@EventHandler
     	public void onPlayerInteract(PlayerInteractEvent event){
     		Player player = event.getPlayer();
-    		Hero hero = plugin.getHeroManager().getHero(player);
+    		Hero hero = plugin.getCharacterManager().getHero( player );
     		if(hero.hasEffect("RocketPack")){
     			float rocketSpeed = (float) SkillConfigManager.getUseSetting(hero, skill, "rocket-speed", 1, false);
     			RocketPack rp = (RocketPack) hero.getEffect("RocketPack");

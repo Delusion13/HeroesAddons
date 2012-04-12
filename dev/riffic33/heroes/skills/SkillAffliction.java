@@ -1,20 +1,23 @@
 package dev.riffic33.heroes.skills;
 
+import java.util.logging.Level;
+
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import com.herocraftonline.dev.heroes.Heroes;
-import com.herocraftonline.dev.heroes.api.SkillResult;
-import com.herocraftonline.dev.heroes.effects.EffectType;
-import com.herocraftonline.dev.heroes.effects.PeriodicDamageEffect;
-import com.herocraftonline.dev.heroes.hero.Hero;
-import com.herocraftonline.dev.heroes.skill.Skill;
-import com.herocraftonline.dev.heroes.skill.SkillConfigManager;
-import com.herocraftonline.dev.heroes.skill.SkillType;
-import com.herocraftonline.dev.heroes.skill.TargettedSkill;
-import com.herocraftonline.dev.heroes.util.Setting;
 
+import com.herocraftonline.heroes.Heroes;
+import com.herocraftonline.heroes.api.SkillResult;
+import com.herocraftonline.heroes.characters.Hero;
+import com.herocraftonline.heroes.characters.Monster;
+import com.herocraftonline.heroes.characters.effects.EffectType;
+import com.herocraftonline.heroes.characters.effects.PeriodicDamageEffect;
+import com.herocraftonline.heroes.characters.skill.Skill;
+import com.herocraftonline.heroes.characters.skill.SkillConfigManager;
+import com.herocraftonline.heroes.characters.skill.SkillType;
+import com.herocraftonline.heroes.characters.skill.TargettedSkill;
+import com.herocraftonline.heroes.util.Setting;
 
 public class SkillAffliction extends TargettedSkill {
 	
@@ -70,13 +73,16 @@ public class SkillAffliction extends TargettedSkill {
     	
     	AfflictionEffect ae = new AfflictionEffect(this, period, duration, tickDmg-1, player, maxJumps);	//-1 QUICKFIX FOR HEROES BUG
     	if (target instanceof Player) {
-            plugin.getHeroManager().getHero((Player) target).addEffect(ae);
+    		plugin.getCharacterManager().getHero((Player) target).addEffect(ae);
+    		
             return SkillResult.NORMAL;
         } else if (target instanceof LivingEntity) {
-            LivingEntity creature = (LivingEntity) target;
-            plugin.getEffectManager().addEntityEffect(creature, ae);
+        	Monster mstr = plugin.getCharacterManager().getMonster( target );
+        			mstr.addEffect( ae );
+        	
             return SkillResult.NORMAL;
         } else 
+        	Heroes.log(Level.WARNING, target+"");
             return SkillResult.INVALID_TARGET;
     }
     
@@ -97,72 +103,81 @@ public class SkillAffliction extends TargettedSkill {
 				this.skill = skill;
 				this.maxJumps = maxJumps;
 		}  
-
-        @Override
-        public void apply(Hero hero) {
-            super.apply(hero);
+	    
+	    @Override
+        public void applyToHero(Hero hero) {
+            super.applyToHero(hero);
             Player player = hero.getPlayer();
             broadcast(player.getLocation(), applyText, player.getDisplayName());    
         }
         
-        @Override
-        public void apply(LivingEntity entity) {
-            super.apply(entity);
-            broadcast(entity.getLocation(), applyText, entity.getClass().getSimpleName().substring(5));    
+	    @Override
+        public void applyToMonster(Monster entity) {
+            super.applyToMonster(entity);
+            broadcast( entity.getEntity().getLocation(), applyText, entity.getEntity().getClass().getSimpleName().substring(5));    
         }
        
-        @Override
-        public void remove(Hero hero) {
+        public void removeFromHero(Hero hero) {
         	Player player = hero.getPlayer();
         	broadcast(player.getLocation(), expireText, player.getDisplayName()); 
         	if(maxJumps-1 <= 0){
-        		super.remove(hero);
+        		super.removeFromHero(hero);
         		return;
         	}else{
 	        	AfflictionEffect ae = new AfflictionEffect(skill, this.getPeriod(), this.getDuration(), this.getTickDamage(), this.getApplier(), this.maxJumps-1);
 	        	passEffect(this.applyHero, player, ae);
-	            super.remove(hero); 
+	            super.removeFromHero(hero); 
         	}
         }
         
         @Override
-        public void remove(LivingEntity entity) {
-        	broadcast(entity.getLocation(), expireText, entity.getClass().getSimpleName()); 
+        public void removeFromMonster(Monster entity) {
+        	broadcast( entity.getEntity().getLocation(), expireText, entity.getEntity().getClass().getSimpleName()); 
         	if(maxJumps-1 <= 0){
-        		super.remove(entity);
+        		super.removeFromMonster(entity);
         		return;
         	}else{
 	        	AfflictionEffect ae = new AfflictionEffect(skill, this.getPeriod(), this.getDuration(), this.getTickDamage(), this.getApplier(), this.maxJumps-1);
 	        	passEffect(this.applyHero, entity, ae);
-	            super.remove(entity);  
+	            super.removeFromMonster(entity);  
         	}
         }
         	
-        private void passEffect(Hero hero, LivingEntity entity, AfflictionEffect eff){
+        private void passEffect(Hero hero, Player entity, AfflictionEffect eff){
         	int radius = (int) SkillConfigManager.getUseSetting(hero, this.getSkill(), "MaxJumpDistance", 5, false);
-        	for(Entity newTarget : entity.getNearbyEntities(radius, radius, radius)){
+        	for(Entity newTarget : ((Entity) entity).getNearbyEntities(radius, radius, radius)){
         		if(!(newTarget instanceof LivingEntity) || newTarget == eff.getApplier()){
         			continue;
         		}
             	if (newTarget instanceof Player) {
-                    plugin.getHeroManager().getHero((Player) newTarget).addEffect(eff);
+            		plugin.getCharacterManager().getHero((Player) newTarget).addEffect(eff);
                     break;
-                } else if (newTarget instanceof LivingEntity) {
-                    LivingEntity creature = (LivingEntity) newTarget;
-                    plugin.getEffectManager().addEntityEffect(creature, eff);
+                }
+        	}
+        }
+        
+        private void passEffect(Hero hero, Monster entity, AfflictionEffect eff){
+        	int radius = (int) SkillConfigManager.getUseSetting(hero, this.getSkill(), "MaxJumpDistance", 5, false);
+        	for(Entity newTarget : entity.getEntity().getNearbyEntities(radius, radius, radius)){
+        		if(!(newTarget instanceof LivingEntity) || newTarget == eff.getApplier()){
+        			continue;
+        		}
+            	if (newTarget instanceof LivingEntity) {
+                	Monster creature = plugin.getCharacterManager().getMonster( (LivingEntity) newTarget );
+                			creature.addEffect(eff);
                     break;
                 }
         	}
         }
 
         @Override
-        public void tick(Hero hero) {
-            super.tick(hero);
+        public void tickHero(Hero hero) {
+            super.tickHero(hero);
         }
         
         @Override
-        public void tick(LivingEntity entity) {
-            super.tick(entity);
+        public void tickMonster(Monster entity) {
+            super.tickMonster(entity);
         }
 	    
     }

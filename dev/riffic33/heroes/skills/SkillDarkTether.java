@@ -6,16 +6,17 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
-import com.herocraftonline.dev.heroes.Heroes;
-import com.herocraftonline.dev.heroes.api.SkillResult;
-import com.herocraftonline.dev.heroes.effects.EffectType;
-import com.herocraftonline.dev.heroes.effects.PeriodicExpirableEffect;
-import com.herocraftonline.dev.heroes.hero.Hero;
-import com.herocraftonline.dev.heroes.skill.Skill;
-import com.herocraftonline.dev.heroes.skill.SkillConfigManager;
-import com.herocraftonline.dev.heroes.skill.SkillType;
-import com.herocraftonline.dev.heroes.skill.TargettedSkill;
-import com.herocraftonline.dev.heroes.util.Setting;
+import com.herocraftonline.heroes.Heroes;
+import com.herocraftonline.heroes.api.SkillResult;
+import com.herocraftonline.heroes.characters.Hero;
+import com.herocraftonline.heroes.characters.Monster;
+import com.herocraftonline.heroes.characters.effects.EffectType;
+import com.herocraftonline.heroes.characters.effects.PeriodicExpirableEffect;
+import com.herocraftonline.heroes.characters.skill.Skill;
+import com.herocraftonline.heroes.characters.skill.SkillConfigManager;
+import com.herocraftonline.heroes.characters.skill.SkillType;
+import com.herocraftonline.heroes.characters.skill.TargettedSkill;
+import com.herocraftonline.heroes.util.Setting;
 
 
 public class SkillDarkTether extends TargettedSkill {
@@ -76,11 +77,10 @@ public class SkillDarkTether extends TargettedSkill {
     	
     	DarkTetherEffect dte = new DarkTetherEffect(this, period, duration, tickDmg, player, closeness, distMod, maxDist);
     	if (target instanceof Player) {
-            plugin.getHeroManager().getHero((Player) target).addEffect(dte);
+    		plugin.getCharacterManager().getHero((Player) target).addEffect(dte);
             return SkillResult.NORMAL;
         } else if (target instanceof LivingEntity) {
-            LivingEntity creature = (LivingEntity) target;
-            plugin.getEffectManager().addEntityEffect(creature, dte);
+        	plugin.getCharacterManager().getMonster( target ).addEffect( dte );
             return SkillResult.NORMAL;
         } else 
             return SkillResult.INVALID_TARGET;
@@ -109,43 +109,42 @@ public class SkillDarkTether extends TargettedSkill {
 				this.maxDist = maxDist;
 				this.baseDmg = tickDmg;
 				this.applier = applier;
-				this.applyHero = plugin.getHeroManager().getHero(applier);
+				this.applyHero = plugin.getCharacterManager().getHero( applier );
 				this.applyText = "DarkTether cast on $1";
 				this.expireText = "DarkTether removed from $1";
 		}  
 
         @Override
-        public void apply(Hero hero) {
-            super.apply(hero);
+        public void applyToHero(Hero hero) {
+            super.applyToHero(hero);
             Player player = hero.getPlayer();
             broadcast(player.getLocation(), applyText, player.getDisplayName());    
         }
         
         @Override
-        public void apply(LivingEntity entity) {
-            super.apply(entity);
-            broadcast(entity.getLocation(), applyText, entity.getClass().getSimpleName().substring(5));    
+        public void applyToMonster(Monster entity) {
+            super.applyToMonster(entity);
+            broadcast( entity.getEntity().getLocation(), applyText, entity.getEntity().getClass().getSimpleName().substring(5) );    
         }
        
         @Override
-        public void remove(Hero hero) {
-        	super.remove(hero);
+        public void removeFromHero(Hero hero) {
+        	super.removeFromHero(hero);
         	Player player = hero.getPlayer();
         	broadcast(player.getLocation(), expireText, player.getDisplayName()); 	
         }
         
         @Override
-        public void remove(LivingEntity entity) {
-        	super.remove(entity);  
-        	broadcast(entity.getLocation(), expireText, entity.getClass().getSimpleName()); 
+        public void removeFromMonster(Monster entity) {
+        	super.removeFromMonster(entity);  
+        	broadcast( entity.getEntity().getLocation(), expireText, entity.getEntity().getClass().getSimpleName() ); 
         }
         
         @Override
-        public void tick(Hero hero) {
-            super.tick(hero);
+        public void tickHero(Hero hero) {
             Player player = hero.getPlayer();
 
-            if (!skill.damageCheck(applier, player))
+            if (!damageCheck(applier, player))
                 return;
             
             skill.addSpellTarget(player, applyHero);
@@ -153,10 +152,9 @@ public class SkillDarkTether extends TargettedSkill {
         }
         
         @Override
-        public void tick(LivingEntity entity) {
-        	super.tick(entity);
-            skill.addSpellTarget(entity, applyHero);
-            Skill.damageEntity(entity, applier, calcDmg(baseDmg, closeness, maxDist, distMod, applier, entity), DamageCause.MAGIC);
+        public void tickMonster(Monster entity) {
+            skill.addSpellTarget(entity.getEntity(), applyHero);
+            damageEntity( entity.getEntity(), applier, calcDmg(baseDmg, closeness, maxDist, distMod, applier, entity.getEntity() ), DamageCause.MAGIC);
         }
 	    
     }

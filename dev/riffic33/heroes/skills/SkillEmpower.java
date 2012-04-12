@@ -11,17 +11,18 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
-import com.herocraftonline.dev.heroes.Heroes;
-import com.herocraftonline.dev.heroes.api.SkillResult;
-import com.herocraftonline.dev.heroes.effects.EffectType;
-import com.herocraftonline.dev.heroes.effects.ExpirableEffect;
-import com.herocraftonline.dev.heroes.hero.Hero;
-import com.herocraftonline.dev.heroes.skill.ActiveSkill;
-import com.herocraftonline.dev.heroes.skill.Skill;
-import com.herocraftonline.dev.heroes.skill.SkillConfigManager;
-import com.herocraftonline.dev.heroes.skill.SkillType;
-import com.herocraftonline.dev.heroes.util.Setting;
-import com.herocraftonline.dev.heroes.util.Util;
+
+import com.herocraftonline.heroes.Heroes;
+import com.herocraftonline.heroes.api.SkillResult;
+import com.herocraftonline.heroes.characters.Hero;
+import com.herocraftonline.heroes.characters.effects.EffectType;
+import com.herocraftonline.heroes.characters.effects.ExpirableEffect;
+import com.herocraftonline.heroes.characters.skill.ActiveSkill;
+import com.herocraftonline.heroes.characters.skill.Skill;
+import com.herocraftonline.heroes.characters.skill.SkillConfigManager;
+import com.herocraftonline.heroes.characters.skill.SkillType;
+import com.herocraftonline.heroes.util.Setting;
+import com.herocraftonline.heroes.util.Util;
 
 
 public class SkillEmpower extends ActiveSkill {
@@ -84,15 +85,15 @@ public class SkillEmpower extends ActiveSkill {
 		}  
 
         @Override
-        public void apply(Hero hero) {
-            super.apply(hero);
+        public void applyToHero(Hero hero) {
+            super.applyToHero(hero);
             Player player = hero.getPlayer();
             broadcast(player.getLocation(), applyText, player.getDisplayName());
         }
 
         @Override
-        public void remove(Hero hero) {
-            super.remove(hero);
+        public void removeFromHero(Hero hero) {
+            super.removeFromHero(hero);
             Player player = hero.getPlayer();
             broadcast(player.getLocation(), expireText, player.getDisplayName());
         }
@@ -124,7 +125,7 @@ public class SkillEmpower extends ActiveSkill {
             }
             
             Player player = (Player) subEvent.getDamager();
-            Hero hero = plugin.getHeroManager().getHero(player);
+            Hero hero = plugin.getCharacterManager().getHero( player );
             if (hero.hasEffect("EmpowerBuff")) {
             	
                 ItemStack item = player.getItemInHand();
@@ -145,7 +146,7 @@ public class SkillEmpower extends ActiveSkill {
             	
             	int addPercentDamage = 0;
             	if(initTarg instanceof Player){
-            		Hero targHero = plugin.getHeroManager().getHero((Player) initTarg);
+            		Hero targHero = plugin.getCharacterManager().getHero( (Player) initTarg );
             		addPercentDamage = (int) ((int) targHero.getMaxHealth()*(newPercent/100f));
             	}else{
             		addPercentDamage = (int) (((LivingEntity) initTarg).getMaxHealth()*(newPercent/100f));

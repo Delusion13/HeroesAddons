@@ -6,17 +6,18 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
-import com.herocraftonline.dev.heroes.Heroes;
-import com.herocraftonline.dev.heroes.api.SkillResult;
-import com.herocraftonline.dev.heroes.effects.EffectType;
-import com.herocraftonline.dev.heroes.effects.PeriodicExpirableEffect;
-import com.herocraftonline.dev.heroes.hero.Hero;
-import com.herocraftonline.dev.heroes.skill.Skill;
-import com.herocraftonline.dev.heroes.skill.SkillConfigManager;
-import com.herocraftonline.dev.heroes.skill.SkillType;
-import com.herocraftonline.dev.heroes.skill.TargettedSkill;
-import com.herocraftonline.dev.heroes.util.Messaging;
-import com.herocraftonline.dev.heroes.util.Setting;
+import com.herocraftonline.heroes.Heroes;
+import com.herocraftonline.heroes.api.SkillResult;
+import com.herocraftonline.heroes.characters.Hero;
+import com.herocraftonline.heroes.characters.Monster;
+import com.herocraftonline.heroes.characters.effects.EffectType;
+import com.herocraftonline.heroes.characters.effects.PeriodicExpirableEffect;
+import com.herocraftonline.heroes.characters.skill.Skill;
+import com.herocraftonline.heroes.characters.skill.SkillConfigManager;
+import com.herocraftonline.heroes.characters.skill.SkillType;
+import com.herocraftonline.heroes.characters.skill.TargettedSkill;
+import com.herocraftonline.heroes.util.Messaging;
+import com.herocraftonline.heroes.util.Setting;
 
 
 public class SkillFear extends TargettedSkill {
@@ -63,11 +64,10 @@ public class SkillFear extends TargettedSkill {
     	
     	FearEffect fe = new FearEffect(this,  duration, player, newStrength);
     	if (target instanceof Player) {
-            plugin.getHeroManager().getHero((Player) target).addEffect(fe);
+    		plugin.getCharacterManager().getHero( (Player) target ).addEffect(fe);
             return SkillResult.NORMAL;
         } else if (target instanceof LivingEntity) {
-            LivingEntity creature = (LivingEntity) target;
-            plugin.getEffectManager().addEntityEffect(creature, fe);
+        	plugin.getCharacterManager().getMonster( target ).addEffect( fe );
             return SkillResult.NORMAL;
         } else 
             return SkillResult.INVALID_TARGET;
@@ -97,34 +97,33 @@ public class SkillFear extends TargettedSkill {
 		}  
 
         @Override
-        public void apply(Hero hero) {
-            super.apply(hero);
+        public void applyToHero( Hero hero ) {
+            super.applyToHero( hero );
             Player player = hero.getPlayer();
             broadcast(player.getLocation(), applyText, player.getDisplayName());
         }
         
         @Override
-        public void apply(LivingEntity e) {
-            super.apply(e);
-            broadcast(e.getLocation(), applyText, e.getClass().getSimpleName().substring(5));
+        public void applyToMonster( Monster e ) {
+            super.applyToMonster( e );
+            broadcast( e.getEntity().getLocation(), applyText, e.getEntity().getClass().getSimpleName().substring(5) );
         }
 
         @Override
-        public void remove(Hero hero) {
-            super.remove(hero);
+        public void removeFromHero(Hero hero) {
+            super.removeFromHero(hero);
             Player player = hero.getPlayer();
             broadcast(player.getLocation(), expireText, player.getDisplayName());
         }
         
         @Override
-        public void remove(LivingEntity e) {
-            super.apply(e);
-            broadcast(e.getLocation(), expireText, e.getClass().getSimpleName().substring(5));
+        public void removeFromMonster( Monster e ) {
+            super.removeFromMonster(e);
+            broadcast(e.getEntity().getLocation(), expireText, e.getEntity().getClass().getSimpleName().substring(5));
         }
         
         @Override
-        public void tick(Hero hero) {
-            super.tick(hero);
+        public void tickHero(Hero hero) {
             Player p = hero.getPlayer(); 
 			if(swtch > 0){
             	p.setVelocity(mover);
@@ -137,17 +136,18 @@ public class SkillFear extends TargettedSkill {
         }
         
         @Override
-        public void tick(LivingEntity e) {
-            super.tick(e);
+        public void tickMonster(Monster e) {
+        	LivingEntity le = e.getEntity();
             if(swtch > 0){
-            	e.setVelocity(mover);
+            	le.setVelocity(mover);
 			}else{
-            	Location lkDir = e.getLocation();
+            	Location lkDir = le.getLocation();
             			 lkDir.setYaw(yaw);
-            			 e.teleport(lkDir);
+            			 le.teleport(lkDir);
             }
             swtch = -swtch;
         }
+
     }
 
    

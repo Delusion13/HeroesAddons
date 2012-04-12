@@ -2,18 +2,19 @@ package dev.riffic33.heroes.skills;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Snowball;
 
-import com.herocraftonline.dev.heroes.Heroes;
-import com.herocraftonline.dev.heroes.api.SkillResult;
-import com.herocraftonline.dev.heroes.effects.EffectType;
-import com.herocraftonline.dev.heroes.effects.PeriodicExpirableEffect;
-import com.herocraftonline.dev.heroes.hero.Hero;
-import com.herocraftonline.dev.heroes.skill.ActiveSkill;
-import com.herocraftonline.dev.heroes.skill.Skill;
-import com.herocraftonline.dev.heroes.skill.SkillConfigManager;
-import com.herocraftonline.dev.heroes.skill.SkillType;
-import com.herocraftonline.dev.heroes.util.Setting;
-
+import com.herocraftonline.heroes.Heroes;
+import com.herocraftonline.heroes.api.SkillResult;
+import com.herocraftonline.heroes.characters.Hero;
+import com.herocraftonline.heroes.characters.Monster;
+import com.herocraftonline.heroes.characters.effects.EffectType;
+import com.herocraftonline.heroes.characters.effects.PeriodicExpirableEffect;
+import com.herocraftonline.heroes.characters.skill.ActiveSkill;
+import com.herocraftonline.heroes.characters.skill.Skill;
+import com.herocraftonline.heroes.characters.skill.SkillConfigManager;
+import com.herocraftonline.heroes.characters.skill.SkillType;
+import com.herocraftonline.heroes.util.Setting;
 
 public class SkillBlizzard extends ActiveSkill{
 	
@@ -67,21 +68,25 @@ public class SkillBlizzard extends ActiveSkill{
     	}
     	
     	@Override
-    	public void apply(Hero hero) {
-            super.apply(hero);
+    	public void applyToHero(Hero hero) {
+            super.applyToHero(hero);
             broadcast(user.getLocation(), "$1 gained Blizzard", user.getDisplayName());    
         }
     	
     	 @Override
-         public void remove(Hero hero) {
+         public void removeFromHero(Hero hero) {
+    		super.removeFromHero(hero);
          	broadcast(user.getLocation(), "$1 lost Blizzard", user.getDisplayName()); 
          }
-    	 
-    	 @Override
-         public void tick(Hero hero) {
-             super.tick(hero);
-             user.throwSnowball();
-         }
+
+		@Override
+		public void tickHero(Hero hero) {
+			user.launchProjectile( Snowball.class );
+		}
+
+		@Override
+		public void tickMonster(Monster arg0) {
+		}
     	
     }
 

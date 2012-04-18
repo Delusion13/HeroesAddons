@@ -147,13 +147,13 @@ public class SkillDarkTether extends TargettedSkill {
             if (!damageCheck(applier, player))
                 return;
             
-            skill.addSpellTarget(player, applyHero);
-            Skill.damageEntity(player, applier, calcDmg(baseDmg, closeness, maxDist, distMod, applier, player), DamageCause.MAGIC);
+            addSpellTarget(player, applyHero);
+            damageEntity(player, applier, calcDmg(baseDmg, closeness, maxDist, distMod, applier, player), DamageCause.MAGIC);
         }
         
         @Override
         public void tickMonster(Monster entity) {
-            skill.addSpellTarget(entity.getEntity(), applyHero);
+            addSpellTarget(entity.getEntity(), applyHero);
             damageEntity( entity.getEntity(), applier, calcDmg(baseDmg, closeness, maxDist, distMod, applier, entity.getEntity() ), DamageCause.MAGIC);
         }
 	    
